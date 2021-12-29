@@ -2,16 +2,11 @@
 /// <reference path="../node_modules/@types/p5/global.d.ts" />
 
 import * as _ from "./constants"
-import * as brick from "./brick"
-import * as ball from "./ball"
-import * as bar from "./bar"
+import { Game } from "./game"
 
 document.addEventListener("contextmenu", (event) => event.preventDefault())
 
-const bricks: brick.Brick[] = []
-const balls: ball.Ball[] = []
-
-let player: bar.Bar
+let game: Game
 
 export function setup() {
   const windowWidth = Math.max(
@@ -28,24 +23,11 @@ export function setup() {
 
   createCanvas(_width, _height)
 
-  for (let x = 0; x < _.GRID_WIDTH; x++) {
-    for (let y = 0; y < _.GRID_HEIGHT; y++) {
-      bricks.push(brick.createRandomBrick(x, y))
-    }
-  }
-
-  balls.push(new ball.Ball())
-
-  player = new bar.Bar()
+  game = new Game(() => frameRate(0))
 }
 
 export function draw() {
-  background(..._.BACKGROUND_COLOR)
-  bricks.forEach((b) => {
-    if (b.durability > 0) b.draw()
-  })
-  balls.forEach((b) => b.draw())
-  player.draw()
+  game.draw()
 }
 
 export function keyPressed() {}

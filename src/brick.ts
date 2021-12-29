@@ -1,5 +1,7 @@
 import * as _ from "./constants"
 
+import * as game from "./game"
+
 export interface BrickOptions {
   x: number
   y: number
@@ -8,8 +10,9 @@ export interface BrickOptions {
 
 export class Brick {
   durability: number
+  touchBall = false
 
-  constructor(public readonly options: BrickOptions) {
+  constructor(private game: game.Game, public readonly options: BrickOptions) {
     this.durability = options.durability
   }
 
@@ -30,8 +33,9 @@ export class Brick {
   }
 
   draw() {
+    this.update()
     stroke(_.BACKGROUND_COLOR)
-    strokeWeight(1)
+    strokeWeight(this.touchBall ? 4 : 1)
     fill(
       255,
       0,
@@ -40,12 +44,22 @@ export class Brick {
     )
     rect(this.screenX, this.screenY, this.width, this.height)
   }
+
+  private update() {
+    this.bounds()
+  }
+
+  private bounds() {}
 }
 
-export function createRandomBrick(x: number, y: number): Brick {
-  return new Brick({
+export function createRandomBrick(
+  game: game.Game,
+  x: number,
+  y: number
+): Brick {
+  return new Brick(game, {
     x,
     y,
-    durability: Math.floor(Math.random() * _.MAX_DURABILITY),
+    durability: floor(random(_.MAX_DURABILITY)),
   })
 }
