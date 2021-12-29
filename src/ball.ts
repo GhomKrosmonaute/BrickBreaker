@@ -6,11 +6,28 @@ export class Ball {
   x = width / 2
   y = height * 0.8
   radius = width * 0.01
-  velocity = createVector(0, 0, 0)
+  angle = 0
+  velocity = createVector()
   speed = _.BALL_BASE_SPEED
 
   constructor(private game: game.Game) {
     this.setRandomVelocity()
+  }
+
+  setRandomVelocity() {
+    this.setAngle(random(-179, -1))
+
+    if (this.velocity.y > 0) {
+      this.velocity.y *= -1
+
+      this.refreshAngle()
+    }
+  }
+
+  setAngle(angle: number) {
+    this.angle = angle
+
+    this.refreshVelocity()
   }
 
   draw() {
@@ -18,21 +35,34 @@ export class Ball {
     noStroke()
     fill(255)
     circle(this.x, this.y, this.radius * 2)
+    if (_.DEBUG_MODE)
+      text(
+        `speed: ${this.speed}\nangle: ${Math.round(
+          this.angle
+        )}\nvelocity:\n   x=${this.velocity.x}\n    y=${this.velocity.y}`,
+        this.x + this.radius,
+        this.y + this.radius
+      )
   }
 
-  private setRandomVelocity() {
-    const angle = round(random(360))
+  refreshVelocity() {
+    this.velocity.set(cos(this.angle), sin(this.angle)).mult(this.speed)
 
-    this.velocity.set(cos(angle) * this.speed, sin(angle) * this.speed)
+    this.refreshAngle()
+  }
 
-    if (this.velocity.y > 0) this.velocity.y *= -1
+  refreshAngle() {
+    const a = createVector()
+    const b = this.velocity
+
+    this.angle = degrees(atan2(b.y - a.y, b.x - a.x))
   }
 
   private update() {
     this.checkFail()
     this.bricks()
-    this.bounds()
     this.move()
+    this.bounds()
   }
 
   private checkFail() {
@@ -40,10 +70,17 @@ export class Ball {
   }
 
   private bounds() {
-    if (this.x + this.radius >= width || this.x - this.radius <= 0)
+    if (this.x + this.radius >= width || this.x - this.radius <= 0) {
       this.velocity.x *= -1
 
-    if (this.y - this.radius <= 0) this.velocity.y *= -1
+      this.refreshAngle()
+    }
+
+    if (this.y - this.radius <= 0) {
+      this.velocity.y *= -1
+
+      this.refreshAngle()
+    }
   }
 
   private bricks() {
@@ -77,7 +114,10 @@ export class Ball {
     ) {
       this.velocity.y *= -1
       this.y = brick.screenY - this.radius
+
       touch = true
+
+      this.refreshAngle()
     }
 
     // bottom
@@ -88,7 +128,10 @@ export class Ball {
     ) {
       this.velocity.y *= -1
       this.y = brick.screenY + brick.height + this.radius
+
       touch = true
+
+      this.refreshAngle()
     }
 
     // left
@@ -99,7 +142,10 @@ export class Ball {
     ) {
       this.velocity.x *= -1
       this.x = brick.screenX - this.radius
+
       touch = true
+
+      this.refreshAngle()
     }
 
     // right
@@ -110,7 +156,10 @@ export class Ball {
     ) {
       this.velocity.x *= -1
       this.x = brick.screenX + brick.width + this.radius
+
       touch = true
+
+      this.refreshAngle()
     }
 
     brick.touchBall = touch
@@ -122,7 +171,7 @@ export class Ball {
     }
   }
 
-  private move() {
+  move() {
     this.x += this.velocity.x
     this.y += this.velocity.y
   }

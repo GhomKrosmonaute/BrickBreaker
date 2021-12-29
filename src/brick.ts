@@ -60,6 +60,6 @@ export function createRandomBrick(
   return new Brick(game, {
     x,
     y,
-    durability: floor(random(_.MAX_DURABILITY)),
+    durability: Math.floor(Math.random() * _.MAX_DURABILITY),
   })
 }

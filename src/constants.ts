@@ -5,3 +5,4 @@ export const MAX_DURABILITY = 5
 export const BACKGROUND_COLOR: RGB = [0, 0, 0]
 export const BALL_BASE_SPEED = 5
 export const BASE_HP = 3
+export const DEBUG_MODE = false

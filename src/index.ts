@@ -23,6 +23,8 @@ export function setup() {
 
   createCanvas(_width, _height)
 
+  frameRate(30)
+
   game = new Game(() => frameRate(0))
 }
 

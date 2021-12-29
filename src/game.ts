@@ -26,10 +26,10 @@ export class Game {
   draw() {
     background(..._.BACKGROUND_COLOR)
 
+    this.bar.draw()
+
     this.bricks.forEach((b) => b.draw())
     this.balls.forEach((b) => b.draw())
-
-    this.bar.draw()
   }
 
   launchBall() {
