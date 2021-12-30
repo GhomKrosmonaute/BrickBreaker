@@ -219,11 +219,5 @@ export class Ball {
     this.game.balls.delete(this)
 
     this.game.hp--
-
-    if (this.game.hp <= 0) this.game.onFail()
-
-    if (this.game.balls.size === 0) {
-      this.game.launchBall()
-    }
   }
 }
