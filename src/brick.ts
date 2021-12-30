@@ -16,24 +16,15 @@ export class Brick {
     this.durability = options.durability
   }
 
-  get width(): number {
-    return Math.floor(width / _.GRID_WIDTH)
-  }
-
-  get height(): number {
-    return this.width / _.ASPECT_RATIO
-  }
-
   get screenX(): number {
-    return this.options.x * this.width
+    return this.options.x * this.game.BRICK_WIDTH
   }
 
   get screenY(): number {
-    return this.options.y * this.height
+    return this.options.y * this.game.BRICK_HEIGHT
   }
 
   draw() {
-    this.update()
     stroke(_.BACKGROUND_COLOR)
     strokeWeight(this.touchBall ? 4 : 1)
     fill(
@@ -42,14 +33,22 @@ export class Brick {
       0,
       Math.floor(map(this.durability, _.MAX_DURABILITY, 0, 255, 0))
     )
-    rect(this.screenX, this.screenY, this.width, this.height)
+    rect(
+      this.screenX,
+      this.screenY,
+      this.game.BRICK_WIDTH,
+      this.game.BRICK_HEIGHT
+    )
   }
 
-  private update() {
-    this.bounds()
-  }
+  hit() {
+    this.game.score++
+    this.durability--
 
-  private bounds() {}
+    if (this.durability === 0) {
+      this.game.bricks.delete(this)
+    }
+  }
 }
 
 export function createRandomBrick(
@@ -60,6 +59,6 @@ export function createRandomBrick(
   return new Brick(game, {
     x,
     y,
-    durability: Math.floor(Math.random() * _.MAX_DURABILITY),
+    durability: 1 + Math.floor(Math.random() * (_.MAX_DURABILITY - 1)),
   })
 }

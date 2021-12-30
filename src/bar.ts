@@ -1,8 +1,8 @@
 import * as game from "./game"
 
 export class Bar {
-  x = 200
-  y = height * 0.9
+  x = width / 2
+  y = height * 1.1
   width = width * 0.1
   height = this.width / 4
 
@@ -39,6 +39,7 @@ export class Bar {
     this.game.balls.forEach((ball) => {
       if (
         ball.y + ball.radius > this.y - this.height / 2 &&
+        ball.y + ball.radius < this.y + this.height / 2 &&
         ball.x + ball.radius > this.x - this.width / 2 &&
         ball.x - ball.radius < this.x + this.width / 2
       ) {
@@ -93,8 +94,11 @@ export class Bar {
   }
 
   private move() {
-    const x = /* Array.from(this.game.balls)[0]?.x ?? */ mouseX
+    const x =
+      this.x + (mouseX - this.x) / 4 /* Array.from(this.game.balls)[0]?.x ?? */
+    const y = this.y + (mouseY - this.y) / 4
 
-    this.x = min(max(this.width / 2, x), width - this.width / 2)
+    this.x = min(max(x, this.width / 2), width - this.width / 2)
+    this.y = min(max(y, height * 0.9), height - this.height / 2)
   }
 }

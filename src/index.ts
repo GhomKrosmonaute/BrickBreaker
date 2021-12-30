@@ -23,6 +23,7 @@ export function setup() {
 
   createCanvas(_width, _height)
 
+  if (_.NO_SMOOTH) noSmooth()
   frameRate(30)
 
   game = new Game(() => frameRate(0))

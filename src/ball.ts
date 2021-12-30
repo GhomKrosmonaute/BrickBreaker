@@ -5,13 +5,51 @@ import * as game from "./game"
 export class Ball {
   x = width / 2
   y = height * 0.8
-  radius = width * 0.01
+  radius = width * 0.007
   angle = 0
   velocity = createVector()
-  speed = _.BALL_BASE_SPEED
+  speed = _.BALL_BASE_SPEED()
+  tail: { x: number; y: number }[] = []
 
   constructor(private game: game.Game) {
     this.setRandomVelocity()
+  }
+
+  draw() {
+    this.update()
+    noStroke()
+    fill(255)
+    for (const part of this.tail) {
+      circle(
+        part.x,
+        part.y,
+        map(
+          this.tail.indexOf(part),
+          0,
+          this.tail.length - 1,
+          this.radius / 2,
+          this.radius * 2
+        )
+      )
+    }
+    circle(this.x, this.y, this.radius * 2)
+    if (_.DEBUG_MODE)
+      text(
+        `speed: ${this.speed}\nangle: ${Math.round(
+          this.angle
+        )}\nvelocity:\n   x=${this.velocity.x}\n    y=${this.velocity.y}`,
+        this.x + this.radius,
+        this.y + this.radius
+      )
+  }
+
+  private update() {
+    this.save()
+    this.checkFail()
+    this.bricks()
+    this.accelerate()
+    this.move()
+    this.bounds()
   }
 
   setRandomVelocity() {
@@ -30,21 +68,6 @@ export class Ball {
     this.refreshVelocity()
   }
 
-  draw() {
-    this.update()
-    noStroke()
-    fill(255)
-    circle(this.x, this.y, this.radius * 2)
-    if (_.DEBUG_MODE)
-      text(
-        `speed: ${this.speed}\nangle: ${Math.round(
-          this.angle
-        )}\nvelocity:\n   x=${this.velocity.x}\n    y=${this.velocity.y}`,
-        this.x + this.radius,
-        this.y + this.radius
-      )
-  }
-
   refreshVelocity() {
     this.velocity.set(cos(this.angle), sin(this.angle)).mult(this.speed)
 
@@ -58,11 +81,13 @@ export class Ball {
     this.angle = degrees(atan2(b.y - a.y, b.x - a.x))
   }
 
-  private update() {
-    this.checkFail()
-    this.bricks()
-    this.move()
-    this.bounds()
+  save() {
+    this.tail.push({
+      x: this.x,
+      y: this.y,
+    })
+
+    if (this.tail.length > _.TAIL_LENGTH) this.tail.shift()
   }
 
   private checkFail() {
@@ -87,29 +112,34 @@ export class Ball {
     const brick = Array.from(this.game.bricks).sort((a, b) => {
       return (
         dist(
-          a.screenX + a.width / 2,
-          a.screenY + a.height / 2,
+          a.screenX + this.game.BRICK_WIDTH / 2,
+          a.screenY + this.game.BRICK_HEIGHT / 2,
           this.x,
           this.y
         ) -
-        dist(b.screenX + b.width / 2, b.screenY + b.height / 2, this.x, this.y)
+        dist(
+          b.screenX + this.game.BRICK_WIDTH / 2,
+          b.screenY + this.game.BRICK_HEIGHT / 2,
+          this.x,
+          this.y
+        )
       )
     })[0]
 
     if (!brick) return
 
     const innerX =
-      this.x > brick.screenX && this.x < brick.screenX + brick.width
+      this.x > brick.screenX && this.x < brick.screenX + this.game.BRICK_WIDTH
     const innerY =
       this.y + this.radius > brick.screenY &&
-      this.y - this.radius < brick.screenY + brick.height
+      this.y - this.radius < brick.screenY + this.game.BRICK_HEIGHT
 
     let touch = false
 
     // top
     if (
       this.y + this.radius > brick.screenY &&
-      this.y < brick.screenY + brick.height / 2 &&
+      this.y < brick.screenY + this.game.BRICK_HEIGHT / 2 &&
       innerX
     ) {
       this.velocity.y *= -1
@@ -122,12 +152,12 @@ export class Ball {
 
     // bottom
     else if (
-      this.y - this.radius < brick.screenY + brick.height &&
-      this.y > brick.screenY + brick.height / 2 &&
+      this.y - this.radius < brick.screenY + this.game.BRICK_HEIGHT &&
+      this.y > brick.screenY + this.game.BRICK_HEIGHT / 2 &&
       innerX
     ) {
       this.velocity.y *= -1
-      this.y = brick.screenY + brick.height + this.radius
+      this.y = brick.screenY + this.game.BRICK_HEIGHT + this.radius
 
       touch = true
 
@@ -137,7 +167,7 @@ export class Ball {
     // left
     else if (
       this.x + this.radius > brick.screenX &&
-      this.x < brick.screenX + brick.width / 2 &&
+      this.x < brick.screenX + this.game.BRICK_WIDTH / 2 &&
       innerY
     ) {
       this.velocity.x *= -1
@@ -150,12 +180,12 @@ export class Ball {
 
     // right
     else if (
-      this.x - this.radius < brick.screenX + brick.width &&
-      this.x > brick.screenX + brick.width / 2 &&
+      this.x - this.radius < brick.screenX + this.game.BRICK_WIDTH &&
+      this.x > brick.screenX + this.game.BRICK_WIDTH / 2 &&
       innerY
     ) {
       this.velocity.x *= -1
-      this.x = brick.screenX + brick.width + this.radius
+      this.x = brick.screenX + this.game.BRICK_WIDTH + this.radius
 
       touch = true
 
@@ -164,11 +194,20 @@ export class Ball {
 
     brick.touchBall = touch
 
-    if (touch) {
-      brick.durability--
+    if (touch) brick.hit()
+  }
 
-      if (brick.durability === 0) this.game.bricks.delete(brick)
-    }
+  private accelerate() {
+    this.speed = map(
+      this.game.score,
+      0,
+      500,
+      _.BALL_BASE_SPEED(),
+      Math.min(
+        _.BALL_BASE_SPEED() * 10,
+        Math.min(this.game.BRICK_HEIGHT, this.game.BRICK_WIDTH)
+      )
+    )
   }
 
   move() {
