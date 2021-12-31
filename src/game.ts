@@ -63,11 +63,6 @@ export class Game {
   }
 
   restart() {
-    this.balls.clear()
-
-    this.setGridShape()
-    this.launchBall()
-
     this.bar = new bar.Bar(this)
     this.scenes = new scenes.Scenes(this)
     this.temporary = new temporary.TemporaryEffectManager(this)
@@ -77,9 +72,17 @@ export class Game {
     this.score = 0
     this.finish = false
     this.framerate = _.FRAMERATE
+
+    this.balls.clear()
+
+    this.setGridShape()
+    this.launchBall()
   }
 
   launchBall() {
+    for (const fx of Array.from(this.temporary.effects)) {
+      if (fx.options.onBallCreate) fx.options.up(fx.options, ball)
+    }
     const newBall = new ball.Ball(this)
     this.balls.add(newBall)
     return newBall

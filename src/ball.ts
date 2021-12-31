@@ -94,8 +94,9 @@ export class Ball {
   }
 
   private checkFail() {
-    if (this.y + this.radius >= height && this.game.balls.size === 1) {
-      this.onFail()
+    if (this.y + this.radius >= height) {
+      if (this.game.balls.size === 1) this.onFail()
+      this.game.balls.delete(this)
       this.game.temporary.effects.forEach(
         (effect: temporary.TemporaryEffect<Ball[]>) => {
           if (effect.options.data.includes(this)) effect.down = true
@@ -204,7 +205,7 @@ export class Ball {
 
     brick.touchBall = touch
 
-    if (touch) brick.hit(this.damages)
+    if (touch) brick.hit(this.damages, this)
   }
 
   private accelerate() {
@@ -226,12 +227,7 @@ export class Ball {
   }
 
   private onFail() {
-    this.game.balls.delete(this)
-
-    if (this.game.balls.size === 0) {
-      this.game.launchBall()
-    }
-
+    this.game.launchBall()
     this.game.hp--
   }
 }

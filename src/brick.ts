@@ -2,6 +2,7 @@ import * as _ from "./constants"
 
 import * as item from "./item"
 import * as game from "./game"
+import * as ball from "./ball"
 import * as level from "./level"
 
 export type EventName = "broken" | "touched"
@@ -21,10 +22,10 @@ export class Brick {
     this._durability = options.durability
   }
 
-  set durability(durability: number) {
+  setDurability(durability: number, ball?: ball.Ball) {
     this._durability = durability
     if (this._durability <= 0) {
-      this.kill()
+      this.kill(ball)
     }
   }
 
@@ -40,7 +41,7 @@ export class Brick {
     return this.options.y * this.game.BRICK_HEIGHT
   }
 
-  get item(): item.Item | null {
+  get item(): typeof item.items[keyof typeof item.items] | null {
     if (this.options.item !== null) {
       return item.items[this.options.item]
     }
@@ -52,7 +53,9 @@ export class Brick {
     stroke(_.BACKGROUND_COLOR)
     strokeWeight(this.touchBall ? 4 : 1)
     fill(
-      ..._.BRICK_BASE_COLOR,
+      ...(_.BRICK_BASE_COLOR.map((factor) => {
+        return factor + (Math.random() <= 0.5 ? -20 : 20)
+      }) as RGB),
       Math.floor(map(this.durability, this.game.level, 0, 255, 0))
     )
     rect(
@@ -65,24 +68,45 @@ export class Brick {
     if (this.options.item !== null) {
       noStroke()
       fill(255)
-      circle(
+      textSize(this.game.BRICK_HEIGHT / 2)
+      text(
+        this.item.icon,
         this.screenX + this.game.BRICK_WIDTH / 2,
-        this.screenY + this.game.BRICK_HEIGHT / 2,
-        this.game.BRICK_HEIGHT / 2
+        this.screenY + this.game.BRICK_HEIGHT / 2
       )
     }
   }
 
-  hit(damages: number) {
-    if (this.item?.on === "touched") this.item.trigger(this)
+  hit(damages: number, ball?: ball.Ball) {
+    if (this.durability <= 0) return
+
+    if (this.item?.on === "touched") {
+      if (
+        this.options.item === "ballDuplication" ||
+        this.options.item === "bomb"
+      ) {
+        this.item.trigger(this, ball)
+      } else {
+        ;(this.item as item.Item<[]>).trigger(this)
+      }
+    }
 
     this.game.score += damages
-    this.durability -= damages
+    this.setDurability(this.durability - damages, ball)
   }
 
-  kill() {
+  kill(ball?: ball.Ball) {
+    if (!this.game.bricks.has(this)) return
+
     if (this.item?.on === "broken") {
-      this.item.trigger(this)
+      if (
+        this.options.item === "ballDuplication" ||
+        this.options.item === "bomb"
+      ) {
+        this.item.trigger(this, ball)
+      } else {
+        ;(this.item as item.Item<[]>).trigger(this)
+      }
       this.options.item = null
     }
 

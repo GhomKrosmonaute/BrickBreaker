@@ -22,8 +22,10 @@ export class Scenes {
 
     if (this.game.bricks.size === 0) {
       this.game.level++
-
+      this.game.balls.clear()
+      this.game.launchBall()
       this.game.setGridShape()
+      this.game.temporary.effects.clear()
     }
   }
 

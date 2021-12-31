@@ -16,6 +16,7 @@ export const levelShapes: LevelShape[] = [
 export const levelItems: LevelItems[] = [
   (game) => {
     Object.keys(item.items).forEach((name) => {
+      console.log("injected:", 3, name)
       injectItems(game, 3, name as item.ItemName)
     })
   },

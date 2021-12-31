@@ -10,7 +10,7 @@ export class TemporaryEffect<Data> {
     public game: game.Game,
     options: Pick<
       TemporaryEffectOptions<Data>,
-      "up" | "down" | "onDraw" | "data" | "cancelCondition"
+      "up" | "down" | "onDraw" | "data" | "cancelCondition" | "onBallCreate"
     >
   ) {
     this.options = {
@@ -39,10 +39,11 @@ export class TemporaryEffect<Data> {
 }
 
 export interface TemporaryEffectOptions<Data> {
-  up: (effect: TemporaryEffectOptions<Data>) => Data
+  up: (effect: TemporaryEffectOptions<Data>, ...args: any[]) => Data
   down: (effect: TemporaryEffectOptions<Data>) => unknown
   onDraw: (effect: TemporaryEffectOptions<Data>) => unknown
   cancelCondition?: (effect: TemporaryEffectOptions<Data>) => boolean
+  onBallCreate?: true
   data: Data
   startAt: number
 }
