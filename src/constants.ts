@@ -3,6 +3,7 @@ export const GRID_WIDTH = 21
 export const GRID_HEIGHT = 8
 export const BACKGROUND_COLOR: RGB = [0, 0, 0]
 export const BALL_BASE_SPEED = () => width / 150
+export const BALL_MAX_SPEED = () => BALL_BASE_SPEED() * 5
 export const BALL_BASE_RADIUS = () => width * 0.007
 export const BASE_EFFECT_DURATION = 50
 export const BASE_HP = 3

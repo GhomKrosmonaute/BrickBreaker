@@ -214,10 +214,8 @@ export class Ball {
       0,
       500,
       _.BALL_BASE_SPEED(),
-      Math.min(
-        _.BALL_BASE_SPEED() * 10,
-        Math.min(this.game.BRICK_HEIGHT, this.game.BRICK_WIDTH)
-      )
+      _.BALL_MAX_SPEED(),
+      true
     )
   }
 

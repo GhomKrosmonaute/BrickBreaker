@@ -124,20 +124,17 @@ export const items = {
 
   // malus
   ballTemporarySpeedUp: new Item("broken", "SPEED", function () {
+    const up = (b: ball.Ball) => {
+      b.speed += _.BALL_BASE_SPEED() / 2
+      return b
+    }
+
     this.game.temporary.add(
       new temporary.TemporaryEffect(this.game, {
         onBallCreate: true,
         data: Array.from(this.game.balls).slice(0),
         cancelCondition: (fx) => this.game.balls.size === 0,
-        up: (fx, b) =>
-          b
-            ? (() => {
-                b.speed += _.BALL_BASE_SPEED() / 2
-                return b
-              })()
-            : fx.data.filter(
-                (ball) => (ball.speed += _.BALL_BASE_SPEED() / 2) ?? true
-              ),
+        up: (fx, b) => (b ? [up(b)] : fx.data.filter(up)),
         down: (fx) =>
           fx.data.forEach((ball) => (ball.speed -= _.BALL_BASE_SPEED() / 2)),
         onDraw: (fx) => {
