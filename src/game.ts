@@ -2,8 +2,11 @@ import * as _ from "./constants"
 
 import * as bar from "./bar"
 import * as ball from "./ball"
+import * as item from "./item"
 import * as brick from "./brick"
+import * as level from "./level"
 import * as scenes from "./scenes"
+import * as temporary from "./temporary"
 
 export class Game {
   hp = _.BASE_HP
@@ -11,8 +14,10 @@ export class Game {
   balls = new Set<ball.Ball>()
   bricks = new Set<brick.Brick>()
   framerate = _.FRAMERATE
+  level = 1
   scenes: scenes.Scenes
   finish = false
+  temporary: temporary.TemporaryEffectManager
 
   private _score = 0
   private _highScore = Number(localStorage.getItem("highScore") ?? 0)
@@ -21,6 +26,9 @@ export class Game {
   readonly BRICK_HEIGHT = this.BRICK_WIDTH / _.ASPECT_RATIO
 
   constructor() {
+    // @ts-ignore
+    window.game = this
+
     this.restart()
   }
 
@@ -48,15 +56,10 @@ export class Game {
   draw() {
     background(..._.BACKGROUND_COLOR)
 
-    if (this.hp > 0) {
-      this.scenes.drawGame()
-    } else if (!this.finish) {
-      this.finish = true
-    } else if (this.finish) {
-      this.scenes.drawGameOver()
-    } else {
-      // title screen
-    }
+    if (this.hp > 0) this.scenes.drawGame()
+    else if (!this.finish) this.finish = true
+    else if (this.finish) this.scenes.drawGameOver()
+    else this.scenes.title()
   }
 
   restart() {
@@ -67,26 +70,46 @@ export class Game {
 
     this.bar = new bar.Bar(this)
     this.scenes = new scenes.Scenes(this)
+    this.temporary = new temporary.TemporaryEffectManager(this)
 
     this.hp = _.BASE_HP
+    this.level = 1
+    this.score = 0
     this.finish = false
     this.framerate = _.FRAMERATE
   }
 
   launchBall() {
-    this.balls.add(new ball.Ball(this))
+    const newBall = new ball.Ball(this)
+    this.balls.add(newBall)
+    return newBall
   }
 
   setGridShape() {
     this.bricks.clear()
 
-    // make grid shape
-    // todo: use default level type presets
-    for (let x = 2; x < _.GRID_WIDTH - 2; x++) {
-      for (let y = 2; y < _.GRID_HEIGHT; y++) {
-        const b = brick.createRandomBrick(this, x, y)
-        if (b.durability > 0) this.bricks.add(b)
+    const levelShapeIndex = Math.floor(
+      (this.level - 1) % level.levelShapes.length
+    )
+    const levelItemsIndex = Math.floor(
+      (this.level - 1) % level.levelItems.length
+    )
+
+    for (let x = 0; x < _.GRID_WIDTH; x++) {
+      for (let y = 0; y < _.GRID_HEIGHT; y++) {
+        if (level.levelShapes[levelShapeIndex](x, y)) {
+          this.bricks.add(
+            new brick.Brick(this, {
+              x,
+              y,
+              durability: this.level,
+              item: null,
+            })
+          )
+        }
       }
     }
+
+    level.levelItems[levelItemsIndex](this)
   }
 }

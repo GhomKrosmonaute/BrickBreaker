@@ -5,6 +5,7 @@ export class Bar {
   y = height * 1.1
   width = width * 0.1
   height = this.width / 4
+  touchTimes = 0
 
   constructor(private game: game.Game) {}
 
@@ -43,40 +44,41 @@ export class Bar {
         ball.x + ball.radius > this.x - this.width / 2 &&
         ball.x - ball.radius < this.x + this.width / 2
       ) {
+        this.touchTimes++
+
+        if (this.touchTimes > 1)
+          console.error(
+            "ball touch bar several times (" + this.touchTimes + ")"
+          )
+
         ball.velocity.y = -abs(ball.velocity.y)
 
         ball.refreshAngle()
 
-        if (ball.x + ball.radius < this.x - this.width / 4) {
-          ball.angle += map(
-            ball.x + ball.radius,
+        if (ball.x < this.x - this.width / 4) {
+          ball.angle -= map(
+            ball.x,
             this.x - this.width / 4,
             this.x - this.width / 2,
             1,
-            20,
-            true
+            15
           )
 
-          console.log("left corner", ball.angle)
-
-          ball.angle = constrain(ball.angle, -179, -1)
+          ball.angle = constrain(ball.angle, -178, -2)
 
           ball.refreshVelocity()
         }
 
-        if (ball.x - ball.radius > this.x + this.width / 4) {
+        if (ball.x > this.x + this.width / 4) {
           ball.angle -= map(
-            ball.x - ball.radius,
+            ball.x,
             this.x + this.width / 4,
             this.x + this.width / 2,
             1,
-            20,
-            true
+            15
           )
 
-          console.log("right corner", ball.angle)
-
-          ball.angle = constrain(ball.angle, -179, -1)
+          ball.angle = constrain(ball.angle, -178, -2)
 
           ball.refreshVelocity()
         }
@@ -84,11 +86,19 @@ export class Bar {
         // décaler la balle hors de la bar si elle est trop a droite ou a gauche
         if (ball.x <= this.x - this.width / 2) {
           ball.x = this.x - this.width / 2 - ball.radius
+          ball.velocity.x = -abs(ball.velocity.x)
         } else if (ball.x >= this.x + this.width / 2) {
           ball.x = this.x + this.width / 2 + ball.radius
+          ball.velocity.x = abs(ball.velocity.x)
         } else {
           ball.y = this.y - this.height / 2 - ball.radius
         }
+
+        ball.velocity.y = -abs(ball.velocity.y)
+
+        ball.refreshAngle()
+      } else {
+        this.touchTimes = 0
       }
     })
   }

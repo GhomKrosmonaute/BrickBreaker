@@ -1,25 +1,27 @@
 import * as _ from "./constants"
 
 import * as game from "./game"
+import * as temporary from "./temporary"
 
 export class Ball {
   x = width / 2
   y = height * 0.8
-  radius = width * 0.007
   angle = 0
   velocity = createVector()
+  radius = _.BALL_BASE_RADIUS()
   speed = _.BALL_BASE_SPEED()
   tail: { x: number; y: number }[] = []
+  damages = 1
 
-  constructor(private game: game.Game) {
+  constructor(public game: game.Game) {
     this.setRandomVelocity()
   }
 
   draw() {
     this.update()
     noStroke()
-    fill(255)
     for (const part of this.tail) {
+      fill(map(this.tail.indexOf(part), 0, this.tail.length - 2, 0, 255))
       circle(
         part.x,
         part.y,
@@ -32,6 +34,7 @@ export class Ball {
         )
       )
     }
+    fill(255)
     circle(this.x, this.y, this.radius * 2)
     if (_.DEBUG_MODE)
       text(
@@ -91,7 +94,14 @@ export class Ball {
   }
 
   private checkFail() {
-    if (this.y + this.radius >= height) this.onFail()
+    if (this.y + this.radius >= height && this.game.balls.size === 1) {
+      this.onFail()
+      this.game.temporary.effects.forEach(
+        (effect: temporary.TemporaryEffect<Ball[]>) => {
+          if (effect.options.data.includes(this)) effect.down = true
+        }
+      )
+    }
   }
 
   private bounds() {
@@ -194,7 +204,7 @@ export class Ball {
 
     brick.touchBall = touch
 
-    if (touch) brick.hit()
+    if (touch) brick.hit(this.damages)
   }
 
   private accelerate() {
@@ -217,6 +227,10 @@ export class Ball {
 
   private onFail() {
     this.game.balls.delete(this)
+
+    if (this.game.balls.size === 0) {
+      this.game.launchBall()
+    }
 
     this.game.hp--
   }

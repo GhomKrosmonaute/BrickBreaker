@@ -10,7 +10,7 @@ export class Scenes {
 
     this.score()
     this.highScore()
-    this.hp()
+    this.hpAndLevel()
     this.speed()
 
     this.game.bar.draw()
@@ -18,8 +18,12 @@ export class Scenes {
     this.game.bricks.forEach((b) => b.draw())
     this.game.balls.forEach((b) => b.draw())
 
-    if (this.game.balls.size === 0) {
-      this.game.launchBall()
+    this.game.temporary.draw()
+
+    if (this.game.bricks.size === 0) {
+      this.game.level++
+
+      this.game.setGridShape()
     }
   }
 
@@ -41,13 +45,17 @@ export class Scenes {
     text(`High Score: ${this.game.highScore}`, width / 2, height * 0.58)
   }
 
-  private hp() {
+  private hpAndLevel() {
     fill(30)
     noStroke()
     textStyle("bold")
     textAlign(CENTER, CENTER)
-    textSize(Math.round(width / 15))
-    text(`♥ = ${this.game.hp}`, width / 2, height * 0.68)
+    textSize(Math.round(width / 20))
+    text(
+      `Lvl.${this.game.level} - ${this.game.hp} hp`,
+      width / 2,
+      height * 0.68
+    )
   }
 
   private speed() {
@@ -67,6 +75,8 @@ export class Scenes {
     this.gameOver(0.4)
     this.button("Retry", 0.6, () => this.game.restart())
   }
+
+  title() {}
 
   private gameOver(h: number) {
     fill(100, 0, 0)
