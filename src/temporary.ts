@@ -1,16 +1,18 @@
 import * as _ from "./constants"
 
 import type * as game from "./game"
+import type * as item from "./item"
 
-export class TemporaryEffect<Data> {
-  public options: TemporaryEffectOptions<Data>
+export class TemporaryEffect {
+  public options: TemporaryEffectOptions
   public down = false
 
   constructor(
     public game: game.Game,
+    public itemName: item.ItemName,
     options: Pick<
-      TemporaryEffectOptions<Data>,
-      "up" | "down" | "onDraw" | "data" | "cancelCondition" | "onBallCreate"
+      TemporaryEffectOptions,
+      "up" | "down" | "onDraw" | "cancelCondition"
     >
   ) {
     this.options = {
@@ -18,7 +20,7 @@ export class TemporaryEffect<Data> {
       startAt: frameCount,
     }
 
-    this.options.data = options.up.bind(options)(options)
+    options.up.bind(options)(options)
   }
 
   draw() {
@@ -33,31 +35,40 @@ export class TemporaryEffect<Data> {
       this.down
     ) {
       this.options.down.bind(this.options)(this.options)
-      this.game.temporary.effects.delete(this)
+      this.game.temporary.effects.delete(this.itemName)
     }
   }
 }
 
-export interface TemporaryEffectOptions<Data> {
-  up: (effect: TemporaryEffectOptions<Data>, ...args: any[]) => Data
-  down: (effect: TemporaryEffectOptions<Data>) => unknown
-  onDraw: (effect: TemporaryEffectOptions<Data>) => unknown
-  cancelCondition?: (effect: TemporaryEffectOptions<Data>) => boolean
-  onBallCreate?: true
-  data: Data
+export interface TemporaryEffectOptions {
+  up: (effect: TemporaryEffectOptions, ...args: any[]) => unknown
+  down: (effect: TemporaryEffectOptions) => unknown
+  onDraw: (effect: TemporaryEffectOptions) => unknown
+  cancelCondition?: (effect: TemporaryEffectOptions) => boolean
   startAt: number
 }
 
 export class TemporaryEffectManager {
-  effects = new Set<TemporaryEffect<any>>()
+  effects = new Map<item.ItemName, TemporaryEffect>()
 
   constructor(public game: game.Game) {}
 
-  add<Data>(effect: TemporaryEffect<Data>) {
-    this.effects.add(effect)
+  add(itemName: item.ItemName, effect: TemporaryEffect) {
+    this.effects.set(itemName, effect)
   }
 
   draw() {
-    this.effects.forEach((effect) => effect.draw())
+    let i = 0
+    this.effects.forEach((effect, itemName) => {
+      i++
+
+      effect.draw()
+
+      fill(200)
+      noStroke()
+      textAlign(LEFT, CENTER)
+      textSize(_.BALL_BASE_RADIUS())
+      text(itemName, width / 10, _.BALL_BASE_RADIUS() * 2 * i)
+    })
   }
 }

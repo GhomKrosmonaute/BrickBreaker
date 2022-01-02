@@ -39,23 +39,13 @@ export const items = {
   }),
   ballTemporarySpeedDown: new Item("broken", "SLOW", function () {
     this.game.temporary.add(
-      new temporary.TemporaryEffect(this.game, {
-        onBallCreate: true,
-        data: Array.from(this.game.balls).slice(0),
+      "ballTemporarySpeedDown",
+      new temporary.TemporaryEffect(this.game,"ballTemporarySpeedDown",{
         cancelCondition: (fx) => this.game.balls.size === 0,
-        up: (fx, b) =>
-          b
-            ? (() => {
-                b.speed -= _.BALL_BASE_SPEED() / 2
-                return b
-              })()
-            : fx.data.filter(
-                (ball) => (ball.speed -= _.BALL_BASE_SPEED() / 2) ?? true
-              ),
-        down: (fx) =>
-          fx.data.forEach((ball) => (ball.speed += _.BALL_BASE_SPEED() / 2)),
-        onDraw: (fx) => {
-          fx.data.forEach((ball) => {
+        up: () => this.game.ballSpeed -= _.BALL_SPEED_BUFF(),
+        down: () => this.game.ballSpeed += _.BALL_SPEED_BUFF(),
+        onDraw: () => {
+          this.game.balls.forEach((ball) => {
             noStroke()
             fill(0, 0, 255, round(255 * 0.25))
             circle(ball.x, ball.y, ball.radius * 2)
@@ -65,21 +55,13 @@ export const items = {
     )
   }),
   ballTemporaryDamageUp: new Item("broken", "DMG", function () {
-    this.game.temporary.add(
-      new temporary.TemporaryEffect(this.game, {
-        onBallCreate: true,
-        data: Array.from(this.game.balls).slice(0),
+    this.game.temporary.add("ballTemporaryDamageUp",
+      new temporary.TemporaryEffect(this.game,"ballTemporaryDamageUp", {
         cancelCondition: (fx) => this.game.balls.size === 0,
-        up: (fx, b) =>
-          b
-            ? (() => {
-                b.damages++
-                return b
-              })()
-            : fx.data.filter((ball) => ball.damages++ ?? true),
-        down: (fx) => fx.data.forEach((ball) => ball.damages--),
-        onDraw: (fx) => {
-          fx.data.forEach((ball) => {
+        up: () => this.game.ballDamages ++,
+        down: () => this.game.ballDamages --,
+        onDraw: () => {
+          this.game.balls.forEach((ball) => {
             stroke(
               ..._.BRICK_BASE_COLOR,
               Math.floor(map(ball.damages, this.game.level, 0, 255, 0))
@@ -93,22 +75,11 @@ export const items = {
     )
   }),
   ballTemporarySizeUp: new Item("broken", "BIG", function () {
-    this.game.temporary.add(
-      new temporary.TemporaryEffect(this.game, {
-        data: Array.from(this.game.balls).slice(0),
-        onBallCreate: true,
-        cancelCondition: (fx) => this.game.balls.size === 0,
-        up: (fx, b) =>
-          b
-            ? (() => {
-                b.radius += _.BALL_BASE_RADIUS() / 2
-                return b
-              })()
-            : fx.data.filter(
-                (ball) => (ball.radius += _.BALL_BASE_RADIUS() / 2) ?? true
-              ),
-        down: (fx) =>
-          fx.data.forEach((ball) => (ball.radius -= _.BALL_BASE_RADIUS() / 2)),
+    this.game.temporary.add("ballTemporarySizeUp",
+      new temporary.TemporaryEffect(this.game, "ballTemporarySizeUp",{
+        cancelCondition: () => this.game.balls.size === 0,
+        up: () => this.game.ballRadius += _.BALL_BASE_RADIUS() / 2,
+        down: () => this.game.ballRadius -= _.BALL_BASE_RADIUS() / 2,
         onDraw: () => null,
       })
     )
@@ -119,26 +90,26 @@ export const items = {
     newBall.x = b.x
     newBall.y = b.y
   }),
-  //barExpansion: new Item("broken", function () {}),
+  barExpansion: new Item("broken", "<->", function () {
+    this.game.temporary.add("barExpansion",
+      new temporary.TemporaryEffect(this.game, "barExpansion",{
+        up:() => this.game.bar.width += _.BAR_BASE_WIDTH() / 3,
+        down:() => this.game.bar.width -= _.BAR_BASE_WIDTH() / 3,
+        onDraw: () => null,
+      })
+    )
+  }),
   //security: new Item("broken", function () {}), // bottom shield
 
   // malus
   ballTemporarySpeedUp: new Item("broken", "SPEED", function () {
-    const up = (b: ball.Ball) => {
-      b.speed += _.BALL_BASE_SPEED() / 2
-      return b
-    }
-
-    this.game.temporary.add(
-      new temporary.TemporaryEffect(this.game, {
-        onBallCreate: true,
-        data: Array.from(this.game.balls).slice(0),
+    this.game.temporary.add("ballTemporarySpeedUp",
+      new temporary.TemporaryEffect(this.game, "ballTemporarySpeedUp",{
         cancelCondition: (fx) => this.game.balls.size === 0,
-        up: (fx, b) => (b ? [up(b)] : fx.data.filter(up)),
-        down: (fx) =>
-          fx.data.forEach((ball) => (ball.speed -= _.BALL_BASE_SPEED() / 2)),
-        onDraw: (fx) => {
-          fx.data.forEach((ball) => {
+        up: () => this.game.ballSpeed += _.BALL_SPEED_BUFF(),
+        down: () =>this.game.ballSpeed -= _.BALL_SPEED_BUFF(),
+        onDraw: () => {
+          this.game.balls.forEach((ball) => {
             noStroke()
             fill(255, 182, 0, round(255 * 0.25))
             circle(ball.x, ball.y, ball.radius * 2)
@@ -150,6 +121,14 @@ export const items = {
   //barTemporaryInvisibility: new Item("broken", function () {}),
   //brickTemporaryInvisibility: new Item("broken", function () {}),
   //ballTemporaryDamageDown: new Item("broken", function () {}),
-  //barContraction: new Item("broken", function () {}),
+  barContraction: new Item("broken", ">-<", function () {
+    this.game.temporary.add("barContraction",
+      new temporary.TemporaryEffect(this.game, "barContraction",{
+        up:() => this.game.bar.width -= _.BAR_BASE_WIDTH() / 3,
+        down:() => this.game.bar.width += _.BAR_BASE_WIDTH() / 3,
+        onDraw: () => null,
+      })
+    )
+  }),
   //brickDurabilityUp: new Item("broken", function () {})
 }

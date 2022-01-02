@@ -18,12 +18,12 @@ export class Game {
   scenes: scenes.Scenes
   finish = false
   temporary: temporary.TemporaryEffectManager
+  ballRadius = _.BALL_BASE_RADIUS()
+  ballSpeed = _.BALL_BASE_SPEED()
+  ballDamages = 1
 
   private _score = 0
   private _highScore = Number(localStorage.getItem("highScore") ?? 0)
-
-  readonly BRICK_WIDTH = width / _.GRID_WIDTH
-  readonly BRICK_HEIGHT = this.BRICK_WIDTH / _.ASPECT_RATIO
 
   constructor() {
     // @ts-ignore
@@ -73,6 +73,10 @@ export class Game {
     this.finish = false
     this.framerate = _.FRAMERATE
 
+    this.ballRadius = _.BALL_BASE_RADIUS()
+    this.ballSpeed = _.BALL_BASE_SPEED()
+    this.ballDamages = 1
+
     this.balls.clear()
 
     this.setGridShape()
@@ -80,9 +84,6 @@ export class Game {
   }
 
   launchBall() {
-    for (const fx of Array.from(this.temporary.effects)) {
-      if (fx.options.onBallCreate) fx.options.up(fx.options, ball)
-    }
     const newBall = new ball.Ball(this)
     this.balls.add(newBall)
     return newBall

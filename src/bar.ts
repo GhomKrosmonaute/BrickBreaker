@@ -1,9 +1,11 @@
+import * as _ from "./constants"
+
 import * as game from "./game"
 
 export class Bar {
   x = width / 2
   y = height * 1.1
-  width = width * 0.1
+  width = _.BAR_BASE_WIDTH()
   height = this.width / 4
   touchTimes = 0
 
@@ -51,9 +53,12 @@ export class Bar {
             "ball touch bar several times (" + this.touchTimes + ")"
           )
 
-        ball.velocity.y = -abs(ball.velocity.y)
+        let vel = ball.velocity
 
-        ball.refreshAngle()
+        ball.velocity = {
+          x: vel.x,
+          y: -abs(vel.y)
+        }
 
         if (ball.x < this.x - this.width / 4) {
           ball.angle -= map(
@@ -65,8 +70,6 @@ export class Bar {
           )
 
           ball.angle = constrain(ball.angle, -178, -2)
-
-          ball.refreshVelocity()
         }
 
         if (ball.x > this.x + this.width / 4) {
@@ -79,24 +82,28 @@ export class Bar {
           )
 
           ball.angle = constrain(ball.angle, -178, -2)
-
-          ball.refreshVelocity()
         }
+
+        vel = ball.velocity
 
         // décaler la balle hors de la bar si elle est trop a droite ou a gauche
         if (ball.x <= this.x - this.width / 2) {
           ball.x = this.x - this.width / 2 - ball.radius
-          ball.velocity.x = -abs(ball.velocity.x)
+
+          ball.velocity = {
+            x: -abs(vel.x),
+            y: -abs(vel.y)
+          }
         } else if (ball.x >= this.x + this.width / 2) {
           ball.x = this.x + this.width / 2 + ball.radius
-          ball.velocity.x = abs(ball.velocity.x)
+
+          ball.velocity = {
+            x: abs(vel.x),
+            y: -abs(vel.y)
+          }
         } else {
           ball.y = this.y - this.height / 2 - ball.radius
         }
-
-        ball.velocity.y = -abs(ball.velocity.y)
-
-        ball.refreshAngle()
       } else {
         this.touchTimes = 0
       }
@@ -104,8 +111,8 @@ export class Bar {
   }
 
   private move() {
-    const x =
-      this.x + (mouseX - this.x) / 4 /* Array.from(this.game.balls)[0]?.x ?? */
+    //const x = this.x + (mouseX - this.x) / 4
+    const x = Array.from(this.game.balls)[0]?.x ?? mouseX
     const y = this.y + (mouseY - this.y) / 4
 
     this.x = min(max(x, this.width / 2), width - this.width / 2)

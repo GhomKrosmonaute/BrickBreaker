@@ -5,6 +5,10 @@ export const BACKGROUND_COLOR: RGB = [0, 0, 0]
 export const BALL_BASE_SPEED = () => width / 150
 export const BALL_MAX_SPEED = () => BALL_BASE_SPEED() * 5
 export const BALL_BASE_RADIUS = () => width * 0.007
+export const BALL_SPEED_BUFF = () => BALL_BASE_SPEED() / 5
+export const BAR_BASE_WIDTH = () => width * 0.1
+export const BRICK_WIDTH = () => width / GRID_WIDTH
+export const BRICK_HEIGHT = () => BRICK_WIDTH() / ASPECT_RATIO
 export const BASE_EFFECT_DURATION = 50
 export const BASE_HP = 3
 export const DEBUG_MODE = false

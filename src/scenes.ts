@@ -4,28 +4,43 @@ export class Scenes {
   constructor(private game: game.Game) {}
 
   drawGame() {
-    if (mouseIsPressed || keyIsPressed)
-      frameRate(Math.round(this.game.framerate * 5))
-    else frameRate(this.game.framerate)
-
-    this.score()
-    this.highScore()
-    this.hpAndLevel()
-    this.speed()
-
-    this.game.bar.draw()
-
-    this.game.bricks.forEach((b) => b.draw())
-    this.game.balls.forEach((b) => b.draw())
-
-    this.game.temporary.draw()
-
     if (this.game.bricks.size === 0) {
+      this.game.temporary.effects.clear()
       this.game.level++
       this.game.balls.clear()
       this.game.launchBall()
       this.game.setGridShape()
-      this.game.temporary.effects.clear()
+    } else {
+      if (mouseIsPressed || keyIsPressed)
+        frameRate(Math.round(this.game.framerate * 5))
+      else frameRate(this.game.framerate)
+
+      this.score()
+      this.highScore()
+      this.hpAndLevel()
+      this.speed()
+
+      this.game.bar.draw()
+
+      // randomly swap two bricks
+      if(frameCount % 10 === 0 && Math.random() <= .5) {
+        const brick1 = random(Array.from(this.game.bricks))
+        const brick2 = random(Array.from(this.game.bricks))
+
+        if(brick1 !== brick2 && brick1 && brick2) {
+          const tempX = brick2.options.x
+          brick2.options.x = brick1.options.x
+          brick1.options.x = tempX
+          const tempY = brick2.options.y
+          brick2.options.y = brick1.options.y
+          brick1.options.y = tempY
+        }
+      }
+
+      this.game.bricks.forEach((b) => b.draw())
+      this.game.balls.forEach((b) => b.draw())
+
+      this.game.temporary.draw()
     }
   }
 

@@ -34,11 +34,11 @@ export class Brick {
   }
 
   get screenX(): number {
-    return this.options.x * this.game.BRICK_WIDTH
+    return this.options.x * _.BRICK_WIDTH()
   }
 
   get screenY(): number {
-    return this.options.y * this.game.BRICK_HEIGHT
+    return this.options.y * _.BRICK_HEIGHT()
   }
 
   get item(): typeof item.items[keyof typeof item.items] | null {
@@ -61,18 +61,18 @@ export class Brick {
     rect(
       this.screenX,
       this.screenY,
-      this.game.BRICK_WIDTH,
-      this.game.BRICK_HEIGHT,
-      this.game.BRICK_HEIGHT / 4
+      _.BRICK_WIDTH(),
+      _.BRICK_HEIGHT(),
+      _.BRICK_HEIGHT() / 4
     )
     if (this.options.item !== null) {
       noStroke()
       fill(255)
-      textSize(this.game.BRICK_HEIGHT / 2)
+      textSize(_.BRICK_HEIGHT() / 2)
       text(
         this.item.icon,
-        this.screenX + this.game.BRICK_WIDTH / 2,
-        this.screenY + this.game.BRICK_HEIGHT / 2
+        this.screenX + _.BRICK_WIDTH() / 2,
+        this.screenY + _.BRICK_HEIGHT() / 2
       )
     }
   }

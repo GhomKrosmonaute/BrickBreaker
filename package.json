@@ -8,6 +8,7 @@
   "scripts": {
     "bundle": "gulp bundle",
     "start": "gulp watch",
+    "test": "tsc --noEmit",
     "format": "prettier --write src gulpfile.js dist/style.css dist/index.html"
   },
   "devDependencies": {
